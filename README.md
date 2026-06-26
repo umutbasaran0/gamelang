@@ -541,27 +541,6 @@ Open `web/game_player.html` in any modern browser — no server, no installation
 5. Click **🃏 Draw Card** to draw from your deck
 6. Watch the Players panel for live HP/gold changes and the Log for event history
 
----
-
-## Running the Tests
-
-```
-$ make test
-```
-
-```
-=== Running valid tests ===
-  PASS  tests/valid/01_minimal.game
-  PASS  tests/valid/02_arena.game
-  ...
-  PASS  tests/valid/15_full_game.game
-=== Running invalid tests (expect errors) ===
-  PASS  tests/invalid/01_missing_brace.game (error caught)
-  PASS  tests/invalid/02_action_no_args.game (error caught)
-  ...
-
-Results: 20 passed, 0 failed
-```
 
 ---
 
