@@ -1,0 +1,4 @@
+// Minimal valid program — just a resource declaration
+resource Gold {
+    amount: 1500
+}
