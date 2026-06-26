@@ -1,0 +1,13 @@
+# Build artifacts
+gamelang
+gamelang.exe
+src/*.o
+
+# Export output
+game_data.json
+
+# Editor temp files
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
