@@ -47,7 +47,7 @@ gamelang/
 │   ├── simple_starter.game     2-player beginner game
 │   ├── monopoly.game           Full Monopoly-style game
 │   ├── dungeon_crawler.game    HP-focused combat crawler
-│   ├── kingdom_of_arath.game  Full showcase — every feature at maximum depth
+│   ├── kingdom_of_arath.game   Full showcase — every feature at maximum depth
 |   ├── 01_minimal.game
 |   └── 15_full_game.game
 ├── web/
