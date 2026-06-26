@@ -43,14 +43,13 @@ gamelang/
 │   ├── interpreter.c / interpreter.h
 │   ├── environment.c / environment.h
 │   └── main.c
-├── tests/
-│   ├── valid/              Programs that must parse and run successfully (15 tests)
-│   └── invalid/            Programs that must produce a SyntaxError (5 tests)
 ├── examples/
 │   ├── simple_starter.game     2-player beginner game
 │   ├── monopoly.game           Full Monopoly-style game
 │   ├── dungeon_crawler.game    HP-focused combat crawler
-│   └── kingdom_of_arath.game  Full showcase — every feature at maximum depth
+│   ├── kingdom_of_arath.game  Full showcase — every feature at maximum depth
+|   ├── 01_minimal.game
+|   └── 15_full_game.game
 ├── web/
 │   └── game_player.html    Self-contained browser game engine
 ├── Makefile
