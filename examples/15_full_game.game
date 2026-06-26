@@ -1,0 +1,99 @@
+// Full game — all constructs combined
+players {
+    count: 4,
+    start_money: 1500,
+    start_hp: 100
+}
+
+arena Board {
+    size: 24,
+    name: "Classic Board"
+}
+
+resource Bank {
+    amount: 20000
+}
+
+tile Go {
+    type: "start",
+    bonus: 200,
+    color: "green"
+}
+
+tile Jail {
+    type: "jail",
+    color: "orange"
+}
+
+tile Chance {
+    type: "chance",
+    color: "yellow"
+}
+
+tile BlueProperty {
+    type: "property",
+    price: 350,
+    rent: 70,
+    color: "blue"
+}
+
+tile RedProperty {
+    type: "property",
+    price: 500,
+    rent: 100,
+    color: "red"
+}
+
+deck ChanceDeck {
+    card Bonus {
+        effect: "transfer",
+        amount: 200,
+        text: "Bank error in your favor — collect 200!"
+    }
+    card GoToJail {
+        effect: "move_to",
+        target: "Jail",
+        text: "Go directly to Jail. Do not pass Go."
+    }
+    card Doctor {
+        effect: "heal",
+        amount: 40,
+        text: "Doctor's fee — you feel better! +40 HP"
+    }
+    card TaxDue {
+        effect: "pay",
+        amount: 150,
+        text: "Income tax due — pay 150."
+    }
+}
+
+turn_structure {
+    phase roll_phase {
+        roll(2)
+        advance(result)
+    }
+    phase bonus_phase {
+        if (result == 12) {
+            transfer(100)
+            heal(20)
+        }
+    }
+    phase penalty_phase {
+        if (result < 3) {
+            pay(50)
+        }
+    }
+}
+
+on land(player) {
+    if (player > 200) {
+        pay(80)
+    } else {
+        heal(20)
+    }
+}
+
+on pass(player) {
+    transfer(200)
+    print("You passed Go! Collect 200.")
+}

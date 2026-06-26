@@ -1,0 +1,166 @@
+// ============================================================
+// DUNGEON CRAWLER EXAMPLE
+// HP-focused combat board game: fight monsters, find loot,
+// heal at the tavern, survive the dungeon.
+// ============================================================
+
+players {
+    count: 2,
+    start_money: 100,
+    start_hp: 100
+}
+
+arena DungeonMap {
+    size: 20,
+    name: "The Dark Dungeon"
+}
+
+resource TreasureVault {
+    amount: 5000
+}
+
+// --- Dungeon Tiles ---
+
+tile Entrance {
+    type: "start",
+    bonus: 0,
+    color: "green"
+}
+
+tile EmptyRoom {
+    type: "normal",
+    color: "gray"
+}
+
+tile Goblin {
+    type: "property",
+    price: 0,
+    rent: 0,
+    combat_damage: 15,
+    loot: 30,
+    color: "green"
+}
+
+tile Orc {
+    type: "property",
+    price: 0,
+    combat_damage: 25,
+    loot: 60,
+    color: "red"
+}
+
+tile Dragon {
+    type: "property",
+    price: 0,
+    combat_damage: 50,
+    loot: 200,
+    color: "darkred"
+}
+
+tile Tavern {
+    type: "chance",
+    heal_amount: 50,
+    cost: 20,
+    color: "yellow"
+}
+
+tile Trap {
+    type: "normal",
+    trap_damage: 20,
+    color: "orange"
+}
+
+tile TreasureRoom {
+    type: "chance",
+    color: "gold"
+}
+
+tile BossRoom {
+    type: "jail",
+    color: "black"
+}
+
+// --- Loot Deck ---
+
+deck LootTable {
+    card HealthPotion {
+        effect: "heal",
+        amount: 35,
+        text: "You found a health potion! Restore 35 HP."
+    }
+    card GoldCoins {
+        effect: "transfer",
+        amount: 80,
+        text: "A pile of gold coins! +80 gold."
+    }
+    card PoisonTrap {
+        effect: "damage",
+        amount: 20,
+        text: "A poison trap springs! Lose 20 HP."
+    }
+    card EnchantedSword {
+        effect: "heal",
+        amount: 10,
+        text: "An enchanted sword — you feel empowered! +10 HP."
+    }
+    card CursedIdol {
+        effect: "pay",
+        amount: 50,
+        text: "A cursed idol drains your gold! Lose 50."
+    }
+    card MagicScroll {
+        effect: "transfer",
+        amount: 120,
+        text: "A rare magic scroll — worth 120 gold!"
+    }
+}
+
+// --- Turn Structure ---
+
+turn_structure {
+    phase explore {
+        roll(1, 6)
+        advance(result)
+    }
+    phase encounter {
+        // High roll = tougher fight but better loot
+        if (result > 4) {
+            damage(25)
+            transfer(60)
+        }
+        if (result < 3) {
+            damage(10)
+            transfer(20)
+        }
+    }
+    phase recovery {
+        // Small passive regen each turn
+        if (result == 6) {
+            heal(15)
+        }
+    }
+}
+
+// --- Events ---
+
+on land(player) {
+    // player token value determines encounter difficulty
+    if (player > 150) {
+        // deep dungeon — dangerous
+        damage(30)
+        transfer(80)
+        print("You face a powerful monster!")
+    } else {
+        // early zone — manageable
+        damage(10)
+        transfer(25)
+        print("A minor enemy attacks.")
+    }
+}
+
+on pass(player) {
+    // Passing the entrance means completing a dungeon loop
+    heal(40)
+    transfer(50)
+    print("You escaped the dungeon floor. +40 HP, +50 gold.")
+}

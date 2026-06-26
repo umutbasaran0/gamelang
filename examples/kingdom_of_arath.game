@@ -1,0 +1,552 @@
+// ============================================================
+//
+//   KINGDOM OF ARATH  —  v2.0
+//   A fantasy conquest board game for 2–4 players.
+//
+//   This file demonstrates every feature of GameLang at
+//   maximum depth:
+//
+//   ✓ else if chains         (no more repeated if blocks)
+//   ✓ break                  (exit while loop cleanly)
+//   ✓ cross-phase variables  (omen set in phase 1 → used in phase 5)
+//   ✓ player_hp / player_money / player_pos / player_id
+//   ✓ Live stat tracking     (heal/damage/pay/transfer update built-ins)
+//   ✓ Combat simulation loop (while + break)
+//   ✓ Variable math chains   (income = base + omen_bonus + march_bonus + conquest_bonus)
+//   ✓ Full else if → else chains in events
+//
+// ============================================================
+
+
+// ── PLAYERS ─────────────────────────────────────────────────
+
+players {
+    count: 4,
+    start_money: 2500,
+    start_hp: 150
+}
+
+
+// ── BOARD ───────────────────────────────────────────────────
+
+arena Arath {
+    size: 36,
+    name: "The Shattered Kingdom of Arath"
+}
+
+
+// ── RESOURCES ───────────────────────────────────────────────
+
+resource RoyalTreasury {
+    amount: 100000,
+    controlled_by: "Bank"
+}
+
+resource AncientMagic {
+    amount: 500,
+    regenerates: true
+}
+
+resource GrainStores {
+    amount: 8000,
+    feeds_players: true
+}
+
+resource MercenaryPool {
+    amount: 200,
+    hire_cost: 150
+}
+
+
+// ── BOARD TILES ─────────────────────────────────────────────
+
+tile ThroneCity {
+    type: "start",
+    bonus: 500,
+    color: "green"
+}
+
+tile WheatVillage {
+    type: "property",
+    price: 120,
+    rent: 22,
+    color: "#7ab648"
+}
+
+tile FogMeadow {
+    type: "normal",
+    color: "#b0bec5"
+}
+
+tile MerchantPort {
+    type: "property",
+    price: 280,
+    rent: 55,
+    color: "#1a8fa0"
+}
+
+tile AncientShrine {
+    type: "chance",
+    color: "#c9a227"
+}
+
+tile RuinedKeep {
+    type: "normal",
+    color: "#6d4c41"
+}
+
+tile SilverMine {
+    type: "property",
+    price: 350,
+    rent: 70,
+    color: "#90a4ae"
+}
+
+tile CursedMarsh {
+    type: "normal",
+    color: "#37474f"
+}
+
+tile DragonPeak {
+    type: "property",
+    price: 600,
+    rent: 130,
+    color: "#b71c1c"
+}
+
+tile OracleWell {
+    type: "chance",
+    color: "#c9a227"
+}
+
+tile BorderPost {
+    type: "jail",
+    color: "#e65100"
+}
+
+tile ElvenGrove {
+    type: "property",
+    price: 400,
+    rent: 85,
+    color: "#2e7d32"
+}
+
+tile BattlePlains {
+    type: "normal",
+    color: "#8d6e63"
+}
+
+tile TradeCrossroads {
+    type: "property",
+    price: 180,
+    rent: 35,
+    color: "#f57f17"
+}
+
+tile SorcererTower {
+    type: "property",
+    price: 520,
+    rent: 110,
+    color: "#6a1b9a"
+}
+
+tile TempleOfArath {
+    type: "chance",
+    color: "#c9a227"
+}
+
+
+// ── CARD DECKS ───────────────────────────────────────────────
+
+deck FateDeck {
+    card RoyalPardon {
+        effect: "move_to",
+        target: "ThroneCity",
+        text: "The new king pardons all debts. Advance to Throne City."
+    }
+    card PlagueOfRats {
+        effect: "damage",
+        amount: 55,
+        text: "A plague of rats ravages the granaries. Lose 55 HP."
+    }
+    card GoldenHarvest {
+        effect: "transfer",
+        amount: 450,
+        text: "The golden harvest fills the treasury. Collect 450 gold."
+    }
+    card DragonRaid {
+        effect: "damage",
+        amount: 80,
+        text: "A dragon descends from the peaks! Lose 80 HP."
+    }
+    card SeasonOfPeace {
+        effect: "heal",
+        amount: 70,
+        text: "A rare season of peace. Restore 70 HP."
+    }
+    card TaxRebellion {
+        effect: "pay",
+        amount: 280,
+        text: "The peasants revolt. Pay 280 gold to restore order."
+    }
+    card MercenaryContracts {
+        effect: "transfer",
+        amount: 320,
+        text: "Mercenaries offer their swords. Collect 320 gold."
+    }
+    card CouncilBetrayal {
+        effect: "move_to",
+        target: "BorderPost",
+        text: "Your council betrays you. Sent to the Border Post."
+    }
+    card AnointedByFire {
+        effect: "heal",
+        amount: 100,
+        text: "The Temple anoints you with sacred fire. Restore 100 HP."
+    }
+    card WinterFamine {
+        effect: "pay",
+        amount: 200,
+        text: "Winter strikes without mercy. Pay 200 gold."
+    }
+}
+
+deck AncientDeck {
+    card VoiceOfTheOracle {
+        effect: "heal",
+        amount: 50,
+        text: "The Oracle speaks: your path is righteous. Restore 50 HP."
+    }
+    card CurseOfTheFirst {
+        effect: "damage",
+        amount: 65,
+        text: "The Curse of the First King falls on you. Lose 65 HP."
+    }
+    card LostVault {
+        effect: "transfer",
+        amount: 600,
+        text: "You discover the Lost Vault of Arath I. Claim 600 gold."
+    }
+    card BloodTithe {
+        effect: "pay",
+        amount: 350,
+        text: "The ancient gods demand tribute. Pay 350 gold."
+    }
+    card BlessingOfElves {
+        effect: "heal",
+        amount: 90,
+        text: "The elves of the Grove offer their blessing. Restore 90 HP."
+    }
+    card ShadowAssassins {
+        effect: "damage",
+        amount: 45,
+        text: "Assassins strike in the night. Lose 45 HP."
+    }
+    card AncientArmy {
+        effect: "transfer",
+        amount: 500,
+        text: "An ancient army pledges to your banner. Collect 500 gold."
+    }
+    card ForgottenDebts {
+        effect: "pay",
+        amount: 180,
+        text: "Old debts come due. Pay 180 gold."
+    }
+    card PhoenixRising {
+        effect: "heal",
+        amount: 120,
+        text: "A phoenix rises from defeat. Restore 120 HP."
+    }
+    card CataclysmicStorm {
+        effect: "damage",
+        amount: 40,
+        text: "A cataclysmic storm tears through the kingdom. Lose 40 HP."
+    }
+}
+
+
+// ── TURN STRUCTURE ───────────────────────────────────────────
+//
+//  5 phases per turn. Variables set in any phase are
+//  visible in all later phases and in event handlers.
+//
+//  Phase 1 — OMEN       Roll d12 → sets threat level for entire turn.
+//  Phase 2 — MARCH      Roll 2d6 → advance. Omen modifies distance.
+//  Phase 3 — CONQUEST   While loop combat. break exits cleanly.
+//  Phase 4 — ECONOMY    Income = base + omen_bonus + march_bonus + conquest_bonus.
+//  Phase 5 — RECOVERY   Regen scales with omen. Uses player_hp built-in.
+
+turn_structure {
+
+    // ── Phase 1: OMEN ───────────────────────────────────────
+    phase omen {
+        random(1, 12)
+        omen -> result
+
+        if (omen > 9) {
+            heal(20)
+            transfer(100)
+            print("A great omen! The stars align in your favor.")
+        } else if (omen > 6) {
+            print("The omens are neutral. Proceed with caution.")
+        } else if (omen > 3) {
+            damage(10)
+            print("An ill omen. Unease spreads through the camp.")
+        } else {
+            damage(15)
+            pay(50)
+            print("A dark omen. Blood fills your dreams. Heavy losses expected.")
+        }
+    }
+
+
+    // ── Phase 2: MARCH ──────────────────────────────────────
+    phase march {
+        roll(2)
+        steps -> result
+
+        if (omen > 9) {
+            steps -> steps + 3
+        } else if (omen > 6) {
+            steps -> steps + 1
+        } else if (omen < 4) {
+            steps -> steps - 2
+        }
+
+        if (steps < 1)  { steps -> 1  }
+        if (steps > 14) { steps -> 14 }
+
+        advance(steps)
+        print("Your army marches.")
+    }
+
+
+    // ── Phase 3: CONQUEST ───────────────────────────────────
+    //
+    //  Combat simulation with break.
+    //  Up to 6 rounds. Enemy starts at 70 HP.
+    //  break exits the loop without the 999-hack.
+
+    phase conquest {
+        enemy_hp  -> 70
+        rounds    -> 0
+        conquered -> 0
+
+        while (enemy_hp > 0) {
+            rounds -> rounds + 1
+
+            // Hard cap on rounds — clean exit with break
+            if (rounds > 6) {
+                print("Stalemate — armies disengage after 6 rounds.")
+                break
+            }
+
+            // Player attacks — omen improves attack power
+            random(1, 20)
+            attack -> result
+
+            if (attack > 15 and omen > 6) {
+                enemy_hp -> enemy_hp - 35   // crit + omen bonus
+            } else if (attack > 15) {
+                enemy_hp -> enemy_hp - 28
+            } else if (attack > 10) {
+                enemy_hp -> enemy_hp - 16
+            } else if (attack > 5) {
+                enemy_hp -> enemy_hp - 7
+            } else {
+                enemy_hp -> enemy_hp - 2
+            }
+
+            // Enemy counterattacks only if still alive
+            if (enemy_hp > 0) {
+                random(1, 20)
+                counter -> result
+
+                if (counter > 14) {
+                    damage(28)
+                } else if (counter > 9) {
+                    damage(14)
+                } else if (counter > 4) {
+                    damage(6)
+                } else {
+                    damage(2)
+                }
+            }
+
+            // Victory condition — break immediately
+            if (enemy_hp < 1) {
+                conquered -> 1
+                transfer(180)
+                heal(25)
+                print("Victory in battle! +180 gold, +25 HP.")
+                break
+            }
+        }
+
+        if (conquered < 1 and rounds > 5) {
+            pay(80)
+            print("The siege failed. Pay 80 in retreat costs.")
+        }
+    }
+
+
+    // ── Phase 4: ECONOMY ────────────────────────────────────
+    //
+    //  All four variables (omen, steps, conquered, player_money)
+    //  are available here — set across different earlier phases.
+
+    phase economy {
+        base_income    -> 200
+        omen_bonus     -> 0
+        march_bonus    -> 0
+        conquest_bonus -> 0
+
+        if (omen > 9) {
+            omen_bonus -> 150
+        } else if (omen > 6) {
+            omen_bonus -> 80
+        } else if (omen > 3) {
+            omen_bonus -> 30
+        }
+
+        if (steps > 10) {
+            march_bonus -> 100
+        } else if (steps > 6) {
+            march_bonus -> 50
+        } else if (steps > 3) {
+            march_bonus -> 20
+        }
+
+        if (conquered > 0) {
+            conquest_bonus -> 200
+        }
+
+        total_income -> base_income + omen_bonus + march_bonus + conquest_bonus
+        transfer(total_income)
+
+        // Poverty safety net: if under 300 gold, get emergency aid
+        if (player_money < 300) {
+            transfer(400)
+            print("Emergency treasury aid: +400 gold to prevent bankruptcy.")
+        }
+    }
+
+
+    // ── Phase 5: RECOVERY ───────────────────────────────────
+    //
+    //  Uses player_hp built-in to give stronger heals when wounded.
+
+    phase recovery {
+        regen -> 0
+
+        if (omen > 9) {
+            regen -> 40
+        } else if (omen > 6) {
+            regen -> 22
+        } else if (omen > 3) {
+            regen -> 10
+        } else {
+            regen -> 4
+        }
+
+        // Wounded troops recover more aggressively
+        if (player_hp < 50) {
+            regen -> regen + 30
+            print("Critical wounds — field medics work overtime.")
+        } else if (player_hp < 80) {
+            regen -> regen + 15
+            print("Significant wounds — medics tend to the injured.")
+        }
+
+        heal(regen)
+    }
+}
+
+
+// ── EVENTS ───────────────────────────────────────────────────
+
+on land(player) {
+    //
+    //  Full else if → else chain replaces the old repeated-if pattern.
+    //  player_hp and player_money are live — reflect changes from
+    //  any phase that ran earlier this turn.
+
+    zone_danger -> player + 60
+
+    if (zone_danger > 280) {
+        // Deep game, high-danger elite zone
+        damage(55)
+        pay(180)
+        print("ELITE ZONE — enemy stronghold! Brutal assault.")
+
+        // If critically wounded after this hit, emergency heal
+        if (player_hp < 30) {
+            heal(40)
+            print("Near death! Emergency retreat and field surgery. +40 HP.")
+        }
+
+    } else if (zone_danger > 220) {
+        // High-danger zone — random outcome
+        random(1, 10)
+        luck -> result
+
+        if (luck > 7) {
+            transfer(200)
+            heal(25)
+            print("HIGH ZONE — fortune smiles! +200 gold, +25 HP.")
+        } else if (luck > 4) {
+            damage(25)
+            pay(70)
+            print("HIGH ZONE — heavy skirmish. -25 HP, -70 gold.")
+        } else {
+            damage(40)
+            pay(120)
+            print("HIGH ZONE — ambushed! -40 HP, -120 gold.")
+        }
+
+    } else if (zone_danger > 160) {
+        // Mid zone — contested territory
+        damage(15)
+        transfer(60)
+        print("MID ZONE — contested ground. Minor losses, some loot.")
+
+    } else if (zone_danger > 100) {
+        // Low zone — friendly but taxed
+        heal(25)
+        transfer(80)
+        print("LOW ZONE — vassal territory. Rest and modest tribute.")
+
+    } else {
+        // Safe haven — player_id 1 always gets the home-tile bonus
+        heal(45)
+        transfer(120)
+        print("SAFE HAVEN — your home territory. Full rest and rich tribute.")
+    }
+}
+
+
+on pass(player) {
+    //
+    //  Returning to Throne City — reward scales with player wealth.
+    //  Rich players get honor; poor players get economic relief.
+
+    if (player_money > 3000) {
+        // Wealthy — treasury bonus in honor, modest cash
+        transfer(300)
+        heal(80)
+        print("You ride through the Throne City gates in triumph!")
+        print("The people cheer your wealth. +300 gold, +80 HP.")
+    } else if (player_money > 1500) {
+        // Normal — standard crossing bonus
+        transfer(500)
+        heal(60)
+        print("You return to the Throne City.")
+        print("Collect your passing bonus. +500 gold, +60 HP.")
+    } else {
+        // Struggling — generous relief package
+        transfer(800)
+        heal(60)
+        print("You limp back to the Throne City, treasury nearly empty.")
+        print("The king's council grants emergency relief. +800 gold, +60 HP.")
+    }
+}

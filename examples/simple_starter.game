@@ -1,0 +1,85 @@
+// ============================================================
+// SIMPLE STARTER — The first game you write in GameLang.
+// Two players race around a 12-tile board.
+// Land on good tiles to earn gold, bad tiles to lose it.
+// First player to go bankrupt loses.
+// ============================================================
+
+players {
+    count: 2,
+    start_money: 500,
+    start_hp: 100
+}
+
+arena SmallBoard {
+    size: 12,
+    name: "Starter Board"
+}
+
+tile Start {
+    type: "start",
+    bonus: 100,
+    color: "green"
+}
+
+tile GoldMine {
+    type: "property",
+    price: 0,
+    rent: 0,
+    color: "yellow"
+}
+
+tile Swamp {
+    type: "normal",
+    color: "gray"
+}
+
+tile Market {
+    type: "chance",
+    color: "blue"
+}
+
+deck MarketEvents {
+    card GoodHarvest {
+        effect: "transfer",
+        amount: 80,
+        text: "Good harvest season! Earn 80 gold."
+    }
+    card BadWeather {
+        effect: "pay",
+        amount: 60,
+        text: "Storm destroys crops. Pay 60 gold."
+    }
+    card TradeBonus {
+        effect: "heal",
+        amount: 25,
+        text: "Successful trade! Gain 25 HP."
+    }
+}
+
+turn_structure {
+    phase move {
+        roll(1, 6)
+        advance(result)
+    }
+    phase effect {
+        if (result > 4) {
+            transfer(50)
+        } else {
+            pay(30)
+        }
+    }
+}
+
+on land(player) {
+    if (player > 100) {
+        pay(40)
+    } else {
+        transfer(40)
+    }
+}
+
+on pass(player) {
+    transfer(100)
+    print("Lapped the board! Collect 100 gold.")
+}

@@ -1,0 +1,175 @@
+// ============================================================
+// MONOPOLY-STYLE EXAMPLE
+// Classic board game mechanics: buy properties, pay rent,
+// draw chance cards, go to jail.
+// ============================================================
+
+players {
+    count: 4,
+    start_money: 1500,
+    start_hp: 100
+}
+
+arena Board {
+    size: 40,
+    name: "Monopoly Classic"
+}
+
+resource Bank {
+    amount: 20000
+}
+
+// --- Board Tiles ---
+
+tile Go {
+    type: "start",
+    bonus: 200,
+    color: "green"
+}
+
+tile MediterraneanAve {
+    type: "property",
+    price: 60,
+    rent: 10,
+    color: "brown"
+}
+
+tile CommunityChest1 {
+    type: "chance",
+    color: "yellow"
+}
+
+tile BalticAve {
+    type: "property",
+    price: 60,
+    rent: 10,
+    color: "brown"
+}
+
+tile IncomeTax {
+    type: "normal",
+    penalty: 200,
+    color: "gray"
+}
+
+tile ReadingRailroad {
+    type: "property",
+    price: 200,
+    rent: 25,
+    color: "black"
+}
+
+tile OrientalAve {
+    type: "property",
+    price: 100,
+    rent: 15,
+    color: "lightblue"
+}
+
+tile Chance1 {
+    type: "chance",
+    color: "yellow"
+}
+
+tile ParkPlace {
+    type: "property",
+    price: 350,
+    rent: 70,
+    color: "darkblue"
+}
+
+tile Boardwalk {
+    type: "property",
+    price: 400,
+    rent: 100,
+    color: "darkblue"
+}
+
+tile Jail {
+    type: "jail",
+    color: "orange"
+}
+
+tile FreeParking {
+    type: "normal",
+    color: "white"
+}
+
+// --- Chance Deck ---
+
+deck ChanceCards {
+    card BankDividend {
+        effect: "transfer",
+        amount: 50,
+        text: "Bank pays you dividend of 50."
+    }
+    card GoToJail {
+        effect: "move_to",
+        target: "Jail",
+        text: "Go directly to Jail. Do not pass Go. Do not collect 200."
+    }
+    card StreetRepairs {
+        effect: "pay",
+        amount: 150,
+        text: "Make general repairs — pay 150."
+    }
+    card PoorTax {
+        effect: "pay",
+        amount: 15,
+        text: "Pay poor tax of 15."
+    }
+    card CollectFromEach {
+        effect: "transfer",
+        amount: 50,
+        text: "You have won second prize in a beauty contest — collect 50."
+    }
+    card GetOutOfJail {
+        effect: "heal",
+        amount: 0,
+        text: "Get Out of Jail Free."
+    }
+    card AdvanceToGo {
+        effect: "move_to",
+        target: "Go",
+        text: "Advance to Go. Collect 200."
+    }
+    card LuxuryTax {
+        effect: "pay",
+        amount: 75,
+        text: "Pay luxury tax of 75."
+    }
+}
+
+// --- Turn Structure ---
+
+turn_structure {
+    phase roll_dice {
+        roll(2)
+        advance(result)
+    }
+    phase doubles_bonus {
+        if (result == 12) {
+            transfer(100)
+        }
+    }
+    phase low_roll_penalty {
+        if (result < 3) {
+            pay(30)
+        }
+    }
+}
+
+// --- Events ---
+
+on land(player) {
+    if (player > 200) {
+        pay(100)
+    } else {
+        heal(15)
+    }
+}
+
+on pass(player) {
+    transfer(200)
+    print("Passed Go! Collect 200.")
+}
